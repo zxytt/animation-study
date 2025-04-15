@@ -1,30 +1,29 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="w-screen h-screen flex flex-row">
+    <div class="flex flex-col mr-4">
+      <span>current time</span>
+      <span class="flex items-center justify-center w-20 h-10 border-2 border-black">{{ value1 }}</span>
+    </div>
+    <div class="flex flex-col">
+      <span>callback fired</span>
+      <span class="flex items-center justify-center w-20 h-10 border-2 border-black">{{ value2 }}</span>
+    </div>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
+<script setup>
+  import { ref } from 'vue'
+  import { animate, createTimeline, createTimer } from 'animejs'
+
+  const value1 = ref(0) 
+  const value2 = ref(0)
+  
+  createTimer({
+    delay: 1000,
+    duration: 100,
+    loop: 10,
+    frameRate: 30,
+    onUpdate: time => value1.value = time.currentTime,
+    onLoop: time => value2.value = time._currentIteration
+  })
+</script>
