@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="./index.css">
+  <script src="https://cdn.bootcdn.net/ajax/libs/matter-js/0.19.0/matter.js"></script>
+</head>
+<body>
+  <div id="c"></div>
+
+  <script>
+    const Engine = Matter.Engine
+    const Render = Matter.Render
+    const Bodies = Matter.Bodies
+    const Composite = Matter.Composite
+    const Composites = Matter.Composites
+    const Constraint = Matter.Constraint
+    const Runner = Matter.Runner
+    const Mouse = Matter.Mouse
+    const MouseConstraint = Matter.MouseConstraint
+
+    // 创建引擎
+    const engine = Engine.create()
+
+    // 创建渲染器
+    const render = Render.create({
+      element: document.getElementById('c'),
+      engine: engine,
+      options: {
+        width: 800, // 设置画布宽
+        height: 600, // 设置画布高
+        wireframes: false, // 设置是否显示线框，默认true，false会自动填充颜色
+      }
+    })
+    
+    // 创建天花板
+    const floor = Bodies.rectangle(400, 0, 800, 20, { 
+      isStatic: true,
+      render: {
+        fillStyle: 'gray'
+      }
+    })
+    
+    // 创建地面
+    const ground = Bodies.rectangle(400, 600, 800, 20, { 
+      isStatic: true,
+      render: {
+        fillStyle: 'gray'
+      }
+    })
+
+    // 创建左墙面
+    const leftWall = Bodies.rectangle(0, 300, 20, 600, { 
+      isStatic: true,
+      render: {
+        fillStyle: 'gray'
+      }
+    })
+
+    // 创建右墙面
+    const rightWall = Bodies.rectangle(800, 300, 20, 600, { 
+      isStatic: true,
+      render: {
+        fillStyle: 'gray'
+      }
+    })
+
+    // 创建物体堆
+    const stack1 = Composites.stack(600, 50, 4, 4, 0, 0, function(x, y) {
+      return Bodies.rectangle(x, y, 40, 40)
+    })
+
+    // 创建小球
+    let ball = Bodies.circle(250, 500, 20, {
+      render: {
+        fillStyle: 'blue'
+      }
+    })
+
+    // 创建约束
+    const constraint = Constraint.create({
+      pointA: { x: 250, y: 500 },
+      bodyB: ball,
+      satisfies: 0.05
+    })
+  
+
+    // 创建鼠标实例
+    const mouse = Mouse.create(render.canvas)
+
+    // 创建一个鼠标约束
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: {
+        stiffness: 1, // 设置弹簧的刚度
+        length: 20,
+        render: {
+          visible: false // 鼠标轨迹是否可见
+        }
+      }
+    })
+
+    let firing = false
+    Matter.Events.on(mouseConstraint, 'enddrag', function(event) {
+      if (event.body === ball) {
+        firing = true
+      }
+    })
+
+    Matter.Events.on(engine, 'afterUpdate', function(event) {
+      if (firing && Math.abs(ball.position.x - 250) < 20 && Math.abs(ball.position.y - 500) < 20) {
+        ball = Bodies.circle(250, 500, 20)
+        Matter.World.add(engine.world, ball)
+        constraint.bodyB = ball
+        firing = false
+      }
+    })
+
+    // 将所有物体添加到世界中
+    Composite.add(engine.world, [floor, ground, leftWall, rightWall, stack1, ball, constraint, mouseConstraint])
+
+    // 执行渲染操作
+    Render.run(render)
+
+    // 创建运行方法
+    var runner = Runner.create()
+
+    // 运行渲染器
+    Runner.run(runner, engine)
+
+  </script>
+</body>
+</html>

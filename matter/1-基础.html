@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="./index.css">
+  <script src="https://cdn.bootcdn.net/ajax/libs/matter-js/0.19.0/matter.js"></script>
+</head>
+<body>
+  <div id="c"></div>
+
+  <script>
+    const Engine = Matter.Engine
+    const Render = Matter.Render
+    const Bodies = Matter.Bodies
+    const Composite = Matter.Composite
+    const Composites = Matter.Composites
+    const Runner = Matter.Runner
+
+    // 创建引擎
+    const engine = Engine.create()
+
+    // 创建渲染器
+    const render = Render.create({
+      element: document.getElementById('c'),
+      engine: engine,
+      options: {
+        width: 800, // 设置画布宽
+        height: 600, // 设置画布高
+        wireframes: false, // 设置是否显示线框，默认true，false会自动填充颜色
+      }
+    })
+
+    // 创建矩形
+    // Matter.Bodies.rectangle(x, y, width, height, [options]), x、y是矩形中心点坐标
+    let boxA = Bodies.rectangle(40, 40, 160, 80)
+
+    // 创建梯形
+    // Matter.Bodies.trapezoid(x, y, width, height, slope, [options]), x、y是梯形中心点坐标，width是梯形宽度，height是梯形高度，slope是梯形斜率
+    // 当斜率 slope 大于0小于1时，梯形的上边小于下边。
+    // 当斜率 slope 等于0时，梯形的上边和下边相等，看起来就是一个矩形。
+    // 当斜率 slope 小于0时，上边大于下边。
+    // 当斜率 slope 大于等于1时，就会呈现出三角形的样子
+    let boxB = Bodies.trapezoid(160, 160, 80, 80, 0.5)
+
+    // 创建三角形
+    // 创建三角形的方法和梯形一样，只需将斜率 slope 设置成大于等于1的值即可。
+    let boxC = Bodies.trapezoid(160, 160, 80, 80, 1)
+    let boxD = Bodies.trapezoid(160, 160, 80, 80, 2, {
+      angle: Math.PI / 4,
+      restitution: 1,
+      frictionAir: 0, 
+    })
+
+    // 创建圆形
+    // Matter.Bodies.circle(x, y, radius, [options], maxSides), x、y是圆形中心点坐标，radius是圆形半径
+    let boxE = Bodies.circle(200, 200, 40, 
+      {
+        restitution: 0, // 弹性，取值0~1，0为没有弹性，1为完全弹性
+        friction: 0.01, // 摩擦力，取值0~1，0为没有摩擦力，1为完全摩擦力
+        render: {
+          fillStyle: 'blue', // 填充颜色
+          strokeStyle: 'green', // 边框颜色
+          lineWidth: 20, // 边框宽度
+          sprite: { // 贴图，xScale和yScale是贴图缩放比例，xOffset和yOffset是贴图偏移量
+            // texture: './1.jpeg', // 设置纹理
+          },
+          opacity: 0.5, // 透明度，取值0~1，0为完全透明，1为完全不透明
+          visible: true, // 是否可见，true为可见，false为不可见
+        },
+        angle: Math.PI / 4, // 旋转角度，取值0~2π，0为不旋转，Math.PI / 4为旋转45度
+        isStatic: false, // 是否静止，true为静止，false为动态
+        frictionAir: 0.5, // 空气摩擦力，取值0~1，0为没有空气摩擦力，1为完全空气摩擦力
+        restitution: 0.5, // 弹性，取值0~1，0为没有弹性，1为完全弹性，超过1会反弹
+        mass: 1, // 质量，取值大于0，质量越大，物体越重
+      }, 
+      25 // 指定圆形近似为多边形时的边数
+    )
+
+    // 创建多边形
+    // Matter.Bodies.polygon(x, y, sides, radius, [options])，sides是多边形的边数，radius是多边形半径
+    let boxF = Bodies.polygon(200, 200, 6, 40)
+
+    // 创建堆控制多个物体
+    let boxStack = Composites.stack(400, 100, 2, 3, 20, 20, function (x, y) {
+      return Bodies.rectangle(x, y, 40, 40, {
+        restitution: 0.8,
+        angle: Math.PI / 4,
+      })
+    })
+    Composite.rotate(boxStack, Math.PI / 4, { x: 400, y: 100 }) // 整体旋转堆
+
+    // 创建地面
+    const ground = Bodies.rectangle(400, 500, 800, 1, { isStatic: true })
+
+    // 创建墙面
+    const wall = Bodies.rectangle(0, 250, 1, 500, { isStatic: true })
+
+    // 将所有物体添加到世界中
+    Composite.add(engine.world, [boxA, boxB, boxC, boxD, boxE, boxF, boxStack, ground, wall])
+    
+
+    // 7. 执行渲染操作
+    Render.run(render)
+
+    // 8. 创建运行方法
+    var runner = Runner.create()
+
+    // 9. 运行渲染器
+    Runner.run(runner, engine)
+
+  </script>
+
+  <div id="d"></div>
+  <script>
+    
+  </script>
+</body>
+</html>
